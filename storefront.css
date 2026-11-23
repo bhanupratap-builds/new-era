@@ -3,6 +3,11 @@
 @layer properties {
   @supports (((-webkit-hyphens:none)) and (not (margin-trim:block))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))) {
     *,::backdrop,:after,:before {
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
       --tw-outline-style: solid;
       --tw-blur: initial;
       --tw-brightness: initial;
@@ -24,6 +29,8 @@
   :host,:root {
     --font-sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
     --font-mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    --default-transition-duration: .15s;
+    --default-transition-timing-function: cubic-bezier(.4,0,.2,1);
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono)
   }
@@ -214,8 +221,45 @@
   .visible {
     visibility: visible
   }
+  .absolute {
+    position: absolute
+  }
+  .fixed {
+    position: fixed
+  }
+  .relative {
+    position: relative
+  }
   .static {
     position: static
+  }
+  .container {
+    width: 100%
+  }
+  @media (min-width:40rem) {
+    .container {
+      max-width: 40rem
+    }
+  }
+  @media (min-width:48rem) {
+    .container {
+      max-width: 48rem
+    }
+  }
+  @media (min-width:64rem) {
+    .container {
+      max-width: 64rem
+    }
+  }
+  @media (min-width:80rem) {
+    .container {
+      max-width: 80rem
+    }
+  }
+  @media (min-width:96rem) {
+    .container {
+      max-width: 96rem
+    }
   }
   .block {
     display: block
@@ -223,14 +267,26 @@
   .contents {
     display: contents
   }
+  .flex {
+    display: flex
+  }
   .hidden {
     display: none
   }
   .inline {
     display: inline
   }
+  .inline-block {
+    display: inline-block
+  }
   .table {
     display: table
+  }
+  .transform {
+    transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, )
+  }
+  .resize {
+    resize: both
   }
   .lowercase {
     text-transform: lowercase
@@ -239,8 +295,16 @@
     outline-style: var(--tw-outline-style);
     outline-width: 1px
   }
-  .filter {
+  .blur {
+    --tw-blur: blur(8px)
+  }
+  .blur,.filter {
     filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, )
+  }
+  .transition {
+    transition-property: color,background-color,border-color,outline-color,text-decoration-color,fill,stroke,--tw-gradient-from,--tw-gradient-via,--tw-gradient-to,opacity,box-shadow,transform,translate,scale,rotate,filter,-webkit-backdrop-filter,backdrop-filter,display,content-visibility,overlay,pointer-events;
+    transition-timing-function: var(--tw-ease,var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration,var(--default-transition-duration))
   }
 }
 :root {
@@ -1749,9 +1813,6 @@ header {
   aspect-ratio: auto;
   height: 190px
 }
-.new-arrivals .product-meta {
-  display: none
-}
 .new-arrivals .product-name {
   margin-top: 8px;
   font: 600 13px/1.5 Arial,sans-serif;
@@ -2071,6 +2132,376 @@ dialog.info-modal::backdrop {
 .button:not(.outline):hover {
   background: #913d2b;
   border-color: #913d2b
+}
+.discovery-search {
+  position: relative
+}
+.suggestions {
+  z-index: 40;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  max-height: 55vh;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  overflow: auto;
+  box-shadow: 0 6px 20px #0002
+}
+.suggestions a {
+  color: var(--ink);
+  text-align: left;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  display: flex
+}
+.suggestions img {
+  object-fit: contain;
+  width: 42px;
+  height: 52px
+}
+.suggestions small {
+  display: block
+}
+.suggestions strong {
+  margin-left: auto
+}
+.suggestions p {
+  padding: 12px
+}
+.suggestions mark {
+  background: var(--beige)
+}
+.discovery-controls {
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  display: flex
+}
+.discovery-controls label {
+  gap: 4px;
+  min-width: 0;
+  display: grid
+}
+.discovery-controls input,.discovery-controls select {
+  max-width: 100%;
+  padding: 8px
+}
+.discovery-controls .filters {
+  flex: 100%
+}
+.filter-chips {
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block: 12px;
+  display: flex
+}
+.filter-chips button {
+  color: #913d2b;
+  background: var(--ivory);
+  border: 1px solid #aa4a34;
+  border-radius: 1rem;
+  padding: 6px 12px
+}
+.drawer-open {
+  display: none
+}
+.filter-drawer {
+  background: var(--ivory);
+  width: min(100%,28rem);
+  height: 100dvh;
+  max-height: 100dvh;
+  color: var(--ink);
+  border: 0;
+  margin: auto 0 0 auto;
+  padding: 20px;
+  overflow: auto
+}
+.filter-drawer::backdrop {
+  background: #1c1c1c66
+}
+.filter-drawer .button {
+  margin-top: 12px
+}
+.product-card {
+  position: relative
+}
+.product-name:after {
+  content: "";
+  position: absolute;
+  inset: 0
+}
+.product-card .heart,.product-card .quick-view {
+  z-index: 2
+}
+.heart {
+  min-width: 40px;
+  min-height: 40px
+}
+.new-arrivals .product-meta {
+  display: flex
+}
+.new-arrivals .product-meta span+span {
+  display: none
+}
+@media (max-width:760px) {
+  .desktop-discovery {
+    display: none
+  }
+  .drawer-open {
+    display: inline-flex
+  }
+  .filter-drawer .discovery-controls {
+    margin-top: 16px
+  }
+  .discovery-search.search-panel {
+    z-index: 25;
+    position: relative
+  }
+  .suggestions {
+    min-width: 0
+  }
+  .filter-drawer .kids-filters {
+    width: 100%
+  }
+}
+.skip-link {
+  z-index: 100;
+  background: var(--ivory);
+  color: var(--ink);
+  padding: 12px;
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-180%)
+}
+.skip-link:focus {
+  transform: none
+}
+body:has(dialog[open]) {
+  overflow: hidden
+}
+.drawer-heading {
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  display: flex
+}
+.drawer-heading button,.gallery-thumbs button {
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  min-width: 44px;
+  min-height: 44px
+}
+.filter-drawer {
+  overscroll-behavior: contain;
+  padding-bottom: max(20px,env(safe-area-inset-bottom))
+}
+.product-gallery {
+  min-width: 0
+}
+.detail-image {
+  display: block
+}
+.gallery-thumbs {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  display: flex
+}
+.gallery-thumbs button {
+  padding: 2px
+}
+.gallery-thumbs button[aria-pressed=true] {
+  border: 2px solid var(--terracotta-action)
+}
+.gallery-thumbs img {
+  object-fit: contain;
+  width: 44px;
+  height: 54px;
+  display: block
+}
+.detail-copy h1,.filter-chips button,.product-meta,.product-name,.results {
+  overflow-wrap: anywhere
+}
+.heart {
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  display: grid
+}
+.drawer-open,.filter-chips button,.filters input,.filters select,.sizes button {
+  min-height: 44px
+}
+@media (max-width:760px) {
+  header {
+    z-index: 30;
+    gap: 4px;
+    padding-inline: 3%;
+    position: relative
+  }
+  .header-actions {
+    gap: 0
+  }
+  .header-actions>a,.header-actions>button {
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px
+  }
+  .header-actions>.mobile-menu,.header-actions>.mobile-search,.header-actions>a {
+    display: inline-flex
+  }
+  .header-actions sup {
+    top: 0;
+    right: 0
+  }
+  .nav.open {
+    gap: 0;
+    padding: 8px 5%;
+    animation: menu-enter .15s ease-out;
+    top: 100%;
+    box-shadow: 0 8px 12px #1c1c1c18
+  }
+  .nav.open a {
+    min-height: 44px;
+    padding: 13px 6px
+  }
+  .filter-chips {
+    gap: 8px
+  }
+  .detail-image {
+    aspect-ratio: 4/5;
+    height: auto;
+    max-height: 70svh
+  }
+  .product-gallery {
+    align-self: start
+  }
+  .catalog .filters,.detail-copy {
+    min-width: 0
+  }
+  .catalog .filters input,.catalog .filters select {
+    max-width: 100%
+  }
+  .search-panel input {
+    min-width: 0
+  }
+  .hero-description {
+    line-height: 1.45
+  }
+  .department-card>div {
+    width: 67%;
+    padding: 16px
+  }
+  .department-card h2 {
+    font-size: clamp(22px,6vw,28px)
+  }
+  .department-card p {
+    line-height: 1.45
+  }
+}
+@keyframes menu-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px)
+  }
+  to {
+    opacity: 1;
+    transform: none
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .nav.open {
+    animation: none
+  }
+}
+.sort-field {
+  color: var(--ink);
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  display: flex
+}
+.sort-field select {
+  min-width: 150px
+}
+.breadcrumbs {
+  font-size: 13px;
+  line-height: 1.5
+}
+.breadcrumbs a {
+  text-underline-offset: 3px;
+  text-decoration: underline
+}
+@media (max-width:760px) {
+  .catalog>.filters {
+    grid-template-columns: auto minmax(0,1fr) auto;
+    align-items: center;
+    gap: 8px;
+    display: grid
+  }
+  .catalog>.filters>input {
+    grid-column: 2;
+    width: 100%
+  }
+  .catalog>.filters>.sort-field {
+    grid-column: 1/-1;
+    justify-content: space-between
+  }
+  .catalog>.filters>.sort-field select {
+    flex: none;
+    width: min(72%,18rem)
+  }
+  .breadcrumbs {
+    padding-block: 16px
+  }
+  .breadcrumbs a {
+    padding-block: 5px;
+    display: inline-block
+  }
+}
+@media (min-width:601px) and (max-width:800px) {
+  .department-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr))
+  }
+  .department-card:last-child {
+    grid-column: 1/-1
+  }
+  .department-card {
+    height: 160px
+  }
+  .department-card>div {
+    width: 75%
+  }
+  .department-card:last-child>div {
+    width: 55%
+  }
+  .department-card h2 {
+    font-size: 24px
+  }
+}
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false
+}
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false
+}
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false
+}
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false
+}
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false
 }
 @property --tw-outline-style {
   syntax: "*";
