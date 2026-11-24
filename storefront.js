@@ -12517,6 +12517,10 @@
     "collection-men": "./assets/collection-men.webp",
     "collection-women": "./assets/collection-women.webp",
     "collection-kids": "./assets/collection-kids.webp",
+    shirt: "./assets/shirt.webp",
+    tee: "./assets/tee.webp",
+    jeans: "./assets/jeans.webp",
+    sweater: "./assets/sweater.webp",
     "hero-woman": "./assets/hero-woman.webp",
     "photo-1483985988355-763728e1935b": "./assets/dress.webp",
     "photo-1516257984-b1b4d707412e": "./assets/jacket.webp",
@@ -12561,94 +12565,626 @@
       src: resolved
     });
   }
-  /**
- * @license lucide-react v0.468.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-  const toKebabCase = string => string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-  const mergeClasses = (...classes) => classes.filter(((className, index, array) => Boolean(className) && className.trim() !== "" && array.indexOf(className) === index)).join(" ").trim();
-  /**
- * @license lucide-react v0.468.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-  var defaultAttributes = {
-    xmlns: "http://www.w3.org/2000/svg",
-    width: 24,
-    height: 24,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+  const key = "new-era-outfit-boards";
+  function boardsFromStorage() {
+    const rows = JSON.parse(localStorage.getItem(key) || "[]");
+    if (!Array.isArray(rows)) throw Error();
+    return rows.filter((b => b && typeof b.id === "string" && typeof b.name === "string" && typeof b.occasion === "string" && Array.isArray(b.slugs) && b.slugs.every((s => typeof s === "string"))));
+  }
+  function Wardrobe({products: products, wish: wish, prefix: prefix}) {
+    const [boards, setBoards] = (0, react.useState)([]), [id, select] = (0, react.useState)(""), [name, setName] = (0, 
+    react.useState)(""), [occasion, setOccasion] = (0, react.useState)(""), [message, setMessage] = (0, 
+    react.useState)("");
+    const current = boards.find((b => b.id === id));
+    (0, react.useEffect)((() => {
+      function refresh() {
+        try {
+          setBoards(boardsFromStorage());
+        } catch {
+          setMessage("Browser storage unavailable.");
+        }
+      }
+      refresh();
+      window.addEventListener("storage", refresh);
+      return () => window.removeEventListener("storage", refresh);
+    }), []);
+    function save(update, msg) {
+      try {
+        const next = update(boardsFromStorage());
+        localStorage.setItem(key, JSON.stringify(next));
+        setBoards(next);
+        setMessage(msg);
+        return true;
+      } catch {
+        setMessage("Could not save boards. Check browser storage.");
+        return false;
+      }
+    }
+    const candidates = products.filter((p => wish.includes(p.slug)));
+    return (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+      children: [ (0, jsx_runtime.jsx)("h1", {
+        children: "Digital wardrobe"
+      }), (0, jsx_runtime.jsx)("p", {
+        children: "Plan outfits with saved demo pieces. Boards stay in this browser profile."
+      }), (0, jsx_runtime.jsxs)("form", {
+        onSubmit: e => {
+          e.preventDefault();
+          const label = name.trim();
+          if (!label) return;
+          const nextId = current?.id ?? crypto.randomUUID();
+          if (boards.some((b => b.id !== nextId && b.name.toLowerCase() === label.toLowerCase()))) {
+            setMessage("Choose a different board name.");
+            return;
+          }
+          if (save((rows => current ? rows.map((b => b.id === nextId ? {
+            ...b,
+            name: label,
+            occasion: occasion.trim()
+          } : b)) : [ ...rows, {
+            id: nextId,
+            name: label,
+            occasion: occasion.trim(),
+            slugs: []
+          } ]), "Board saved.")) select(nextId);
+        },
+        children: [ (0, jsx_runtime.jsxs)("label", {
+          children: [ "Outfit name", (0, jsx_runtime.jsx)("input", {
+            required: true,
+            maxLength: 80,
+            value: name,
+            onChange: e => setName(e.target.value)
+          }) ]
+        }), (0, jsx_runtime.jsxs)("label", {
+          children: [ "Occasion", (0, jsx_runtime.jsx)("input", {
+            maxLength: 80,
+            value: occasion,
+            onChange: e => setOccasion(e.target.value)
+          }) ]
+        }), (0, jsx_runtime.jsx)("button", {
+          children: current ? "Update board" : "Create board"
+        }), current && (0, jsx_runtime.jsx)("button", {
+          type: "button",
+          onClick: () => {
+            select("");
+            setName("");
+            setOccasion("");
+          },
+          children: "New board"
+        }) ]
+      }), (0, jsx_runtime.jsx)("p", {
+        role: "status",
+        children: message
+      }), (0, jsx_runtime.jsx)("h2", {
+        children: "Your outfit boards"
+      }), !boards.length && (0, jsx_runtime.jsx)("p", {
+        children: "Create your first inspiration board."
+      }), boards.map((b => (0, jsx_runtime.jsx)("button", {
+        "aria-pressed": b.id === id,
+        onClick: () => {
+          select(b.id);
+          setName(b.name);
+          setOccasion(b.occasion);
+        },
+        children: b.name
+      }, b.id))), current && (0, jsx_runtime.jsxs)("section", {
+        children: [ (0, jsx_runtime.jsx)("h2", {
+          children: current.name
+        }), (0, jsx_runtime.jsx)("p", {
+          children: current.occasion
+        }), (0, jsx_runtime.jsx)("div", {
+          className: "premium-grid",
+          children: current.slugs.map((s => {
+            const p = products.find((p => p.slug === s));
+            return (0, jsx_runtime.jsxs)("div", {
+              children: [ p ? (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+                children: [ (0, jsx_runtime.jsx)(Photo, {
+                  src: p.images[0],
+                  alt: ""
+                }), (0, jsx_runtime.jsx)("a", {
+                  href: prefix + "/product/" + s + "/",
+                  children: p.name
+                }) ]
+              }) : (0, jsx_runtime.jsx)("p", {
+                children: "Piece unavailable"
+              }), " ", (0, jsx_runtime.jsxs)("button", {
+                onClick: () => save((rows => rows.map((b => b.id === id ? {
+                  ...b,
+                  slugs: b.slugs.filter((x => x !== s))
+                } : b))), "Piece removed."),
+                children: [ "Remove ", p?.name || "piece" ]
+              }) ]
+            }, s);
+          }))
+        }), (0, jsx_runtime.jsx)("h3", {
+          children: "Add from wishlist"
+        }), candidates.map((p => (0, jsx_runtime.jsx)("button", {
+          disabled: current.slugs.includes(p.slug),
+          onClick: () => save((rows => rows.map((b => b.id === id ? {
+            ...b,
+            slugs: [ ...new Set([ ...b.slugs, p.slug ]) ]
+          } : b))), "Piece added."),
+          children: p.name
+        }, p.slug))), !candidates.length && (0, jsx_runtime.jsx)("p", {
+          children: "Save a product with its heart button to add it here."
+        }), (0, jsx_runtime.jsxs)("details", {
+          children: [ (0, jsx_runtime.jsx)("summary", {
+            children: "Delete this board"
+          }), (0, jsx_runtime.jsx)("button", {
+            onClick: () => {
+              if (save((rows => rows.filter((b => b.id !== id))), "Board deleted.")) {
+                select("");
+                setName("");
+                setOccasion("");
+              }
+            },
+            children: "Confirm delete board"
+          }) ]
+        }) ]
+      }) ]
+    });
+  }
+  function signature(image) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 4;
+    canvas.height = 4;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw Error();
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, 4, 4);
+    ctx.drawImage(image, 0, 0, 4, 4);
+    return Array.from(ctx.getImageData(0, 0, 4, 4).data).filter(((_, i) => i % 4 !== 3));
+  }
+  async function png(file) {
+    if (file.type !== "image/png" || file.size > 2 * 1024 * 1024 || file.size < 33) throw Error("Choose a PNG up to 2 MiB.");
+    const view = new DataView(await file.slice(0, 24).arrayBuffer());
+    if (view.getUint32(0) !== 2303741511 || view.getUint32(4) !== 218765834 || view.getUint32(8) !== 13 || view.getUint32(12) !== 1229472850) throw Error("The file is not a valid PNG.");
+    const w = view.getUint32(16), h = view.getUint32(20);
+    if (!w || !h || w * h > 8e6 || Math.max(w, h) > 5e3) throw Error("Choose an image under 8 megapixels and 5,000 pixels per side.");
+    const bmp = await createImageBitmap(file);
+    try {
+      return signature(bmp);
+    } finally {
+      bmp.close();
+    }
+  }
+  function VisualSearch({products: products, prefix: prefix}) {
+    const [preview, setPreview] = (0, react.useState)(""), [matches, setMatches] = (0, 
+    react.useState)([]), [message, setMessage] = (0, react.useState)("");
+    const generation = (0, react.useRef)(0);
+    (0, react.useEffect)((() => () => {
+      generation.current++;
+    }), []);
+    (0, react.useEffect)((() => () => {
+      if (preview) URL.revokeObjectURL(preview);
+    }), [ preview ]);
+    async function search(file) {
+      const rev = ++generation.current;
+      setMatches([]);
+      setPreview("");
+      setMessage("");
+      if (!file) return;
+      try {
+        const sample = await png(file);
+        if (rev !== generation.current) return;
+        setPreview(URL.createObjectURL(file));
+        setMessage("Comparing catalogue photos…");
+        const scores = new Map;
+        for (const raw of new Set(products.map((p => p.images[0])).filter(Boolean))) {
+          if (rev !== generation.current) return;
+          const src = window.newEraPhotos?.[raw] ?? raw;
+          if (!src.startsWith("data:image/webp;base64,") && !/^\/?demo-photos\/[a-z0-9-]+\.webp$/.test(src) && !/^\.\/assets\/[a-z0-9-]+\.webp$/.test(src)) continue;
+          try {
+            const img = new Image;
+            img.src = src;
+            await img.decode();
+            const vector = signature(img);
+            scores.set(raw, vector.reduce(((sum, v, i) => sum + (v - sample[i]) ** 2), 0));
+          } catch {
+            continue;
+          }
+        }
+        if (rev !== generation.current) return;
+        const ranked = products.filter((p => scores.has(p.images[0]))).sort(((a, b) => scores.get(a.images[0]) - scores.get(b.images[0]) || a.slug.localeCompare(b.slug))).slice(0, 8);
+        setMatches(ranked);
+        setMessage(ranked.length ? "Closest colour layouts in the demo photos." : "No comparable local photos available.");
+      } catch (e) {
+        if (rev === generation.current) setMessage(e instanceof Error && e.message.startsWith("Choose") ? e.message : "Unable to read this PNG. Choose another image.");
+      }
+    }
+    return (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+      children: [ (0, jsx_runtime.jsx)("h1", {
+        children: "Visual search"
+      }), (0, jsx_runtime.jsx)("p", {
+        children: "Compare colour and layout across 16 regions of each bundled photo. Your image stays in this tab. Similar colours can match different garments."
+      }), (0, jsx_runtime.jsxs)("label", {
+        children: [ "Outfit image (PNG, up to 2 MiB)", (0, jsx_runtime.jsx)("input", {
+          type: "file",
+          accept: "image/png",
+          onChange: e => void search(e.target.files?.[0])
+        }) ]
+      }), preview && (0, jsx_runtime.jsx)(Photo, {
+        src: preview,
+        alt: "Your selected outfit preview"
+      }), (0, jsx_runtime.jsx)("p", {
+        role: "status",
+        children: message
+      }), (0, jsx_runtime.jsx)("div", {
+        className: "premium-grid",
+        children: matches.map((p => (0, jsx_runtime.jsxs)("a", {
+          href: prefix + "/product/" + p.slug + "/",
+          children: [ (0, jsx_runtime.jsx)(Photo, {
+            src: p.images[0],
+            alt: ""
+          }), p.name, " · ", money(p.price) ]
+        }, p.slug)))
+      }) ]
+    });
+  }
+  const fresh = {
+    departments: [],
+    styles: [],
+    colors: [],
+    categories: [],
+    sizes: [],
+    min: "",
+    max: ""
   };
-  /**
- * @license lucide-react v0.468.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-  const Icon = (0, react.forwardRef)((({color: color = "currentColor", size: size = 24, strokeWidth: strokeWidth = 2, absoluteStrokeWidth: absoluteStrokeWidth, className: className = "", children: children, iconNode: iconNode, ...rest}, ref) => (0, 
-  react.createElement)("svg", {
-    ref: ref,
-    ...defaultAttributes,
-    width: size,
-    height: size,
-    stroke: color,
-    strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth,
-    className: mergeClasses("lucide", className),
-    ...rest
-  }, [ ...iconNode.map((([tag, attrs]) => (0, react.createElement)(tag, attrs))), ...Array.isArray(children) ? children : [ children ] ])));
-  /**
- * @license lucide-react v0.468.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-  const createLucideIcon = (iconName, iconNode) => {
-    const Component = (0, react.forwardRef)((({className: className, ...props}, ref) => (0, 
-    react.createElement)(Icon, {
-      ref: ref,
-      iconNode: iconNode,
-      className: mergeClasses(`lucide-${toKebabCase(iconName)}`, className),
-      ...props
-    })));
-    Component.displayName = `${iconName}`;
-    return Component;
+  const StyleProfile_key = "new-era-style-preferences";
+  const department = p => p.department === "KIDS" ? "Kids" : p.gender === "MEN" ? "Men" : p.gender === "WOMEN" ? "Women" : "Unisex";
+  const styles = {
+    "Modern classics": [ "shirts", "dresses" ],
+    "Weekend casual": [ "jeans", "t-shirts", "boys-clothing", "girls-clothing" ],
+    "Soft layers": [ "knitwear", "hoodies", "jackets", "baby-clothing" ]
   };
-  /**
- * @license lucide-react v0.468.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-  const X = createLucideIcon("X", [ [ "path", {
-    d: "M18 6 6 18",
-    key: "1bl5f8"
-  } ], [ "path", {
-    d: "m6 6 12 12",
-    key: "d8bk6v"
-  } ] ]);
-  /**
- * @license lucide-react v0.468.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-  const Search = createLucideIcon("Search", [ [ "circle", {
-    cx: "11",
-    cy: "11",
-    r: "8",
-    key: "4ej97u"
-  } ], [ "path", {
-    d: "m21 21-4.3-4.3",
-    key: "1qie3q"
-  } ] ]);
+  function read() {
+    try {
+      const s = JSON.parse(localStorage.getItem(StyleProfile_key) ?? "{}");
+      const result = {
+        ...fresh
+      };
+      for (const k of [ "departments", "styles", "colors", "categories", "sizes" ]) result[k] = Array.isArray(s?.[k]) ? s[k].filter((v => typeof v === "string")).slice(0, 100) : [];
+      for (const k of [ "min", "max" ]) result[k] = typeof s?.[k] === "string" && /^\d{0,10}$/.test(s[k]) ? s[k] : "";
+      return result;
+    } catch {
+      return fresh;
+    }
+  }
+  function rankPieces(products, prefs) {
+    return products.filter((p => p.isDemo && (!prefs.min || Number(p.price) >= Number(prefs.min)) && (!prefs.max || Number(p.price) <= Number(prefs.max)))).map((p => {
+      const reasons = [ prefs.departments.includes(department(p)) ? "department" : "", prefs.categories.includes(p.category) ? "category" : "", prefs.colors.some((c => p.colors.includes(c))) ? "colour" : "", prefs.sizes.some((s => p.sizes.includes(s))) ? "size" : "", prefs.styles.some((s => styles[s]?.includes(p.categorySlug))) ? "style" : "", prefs.min || prefs.max ? "budget" : "" ].filter(Boolean);
+      return {
+        p: p,
+        reasons: reasons
+      };
+    })).filter((r => r.reasons.length)).sort(((a, b) => b.reasons.length - a.reasons.length || a.p.slug.localeCompare(b.p.slug)));
+  }
+  function Profile({products: products, prefix: prefix}) {
+    const [draft, edit] = (0, react.useState)(fresh), [saved, setSaved] = (0, react.useState)(fresh), [message, setMessage] = (0, 
+    react.useState)("");
+    (0, react.useEffect)((() => {
+      const prefs = read();
+      edit(prefs);
+      setSaved(prefs);
+    }), []);
+    const choices = {
+      departments: [ "Men", "Women", "Kids" ],
+      styles: Object.keys(styles),
+      colors: [ ...new Set(products.flatMap((p => p.colors))) ].sort(),
+      categories: [ ...new Set(products.map((p => p.category))) ].sort(),
+      sizes: [ ...new Set(products.flatMap((p => p.sizes))) ].sort()
+    };
+    const matches = rankPieces(products, saved);
+    return (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+      children: [ (0, jsx_runtime.jsx)("h1", {
+        children: "Personal style profile"
+      }), (0, jsx_runtime.jsx)("p", {
+        children: "Optional preferences guide your discovery picks. They stay in this browser profile and are shared with anyone using it. Clear them here at any time."
+      }), (0, jsx_runtime.jsxs)("form", {
+        onSubmit: e => {
+          e.preventDefault();
+          if (draft.min && draft.max && Number(draft.min) > Number(draft.max)) {
+            setMessage("Maximum budget must be at least the minimum.");
+            return;
+          }
+          try {
+            localStorage.setItem(StyleProfile_key, JSON.stringify(draft));
+            setSaved(draft);
+            setMessage("Preferences saved.");
+          } catch {
+            setMessage("Could not save preferences in this browser.");
+          }
+        },
+        children: [ Object.keys(choices).map((k => (0, jsx_runtime.jsxs)("details", {
+          children: [ (0, jsx_runtime.jsxs)("summary", {
+            children: [ "Preferred ", k ]
+          }), (0, jsx_runtime.jsx)("div", {
+            className: "option-list",
+            children: choices[k].map((v => (0, jsx_runtime.jsxs)("label", {
+              children: [ (0, jsx_runtime.jsx)("input", {
+                type: "checkbox",
+                checked: draft[k].includes(v),
+                onChange: e => edit({
+                  ...draft,
+                  [k]: e.target.checked ? [ ...draft[k], v ] : draft[k].filter((x => x !== v))
+                })
+              }), v ]
+            }, v)))
+          }) ]
+        }, k))), [ "min", "max" ].map((k => (0, jsx_runtime.jsxs)("label", {
+          children: [ k === "min" ? "Minimum" : "Maximum", " budget (INR)", (0, jsx_runtime.jsx)("input", {
+            type: "number",
+            min: "0",
+            max: "9999999999",
+            step: "1",
+            value: draft[k],
+            onChange: e => edit({
+              ...draft,
+              [k]: e.target.value
+            })
+          }) ]
+        }, k))), (0, jsx_runtime.jsx)("button", {
+          children: "Save preferences"
+        }), " ", (0, jsx_runtime.jsx)("button", {
+          type: "button",
+          onClick: () => {
+            try {
+              localStorage.removeItem(StyleProfile_key);
+              edit(fresh);
+              setSaved(fresh);
+              setMessage("Preferences cleared.");
+            } catch {
+              setMessage("Browser storage unavailable.");
+            }
+          },
+          children: "Clear preferences"
+        }) ]
+      }), (0, jsx_runtime.jsx)("p", {
+        role: "status",
+        children: message
+      }), (0, jsx_runtime.jsxs)("section", {
+        children: [ (0, jsx_runtime.jsx)("h2", {
+          children: "Selected for your preferences"
+        }), matches.length ? (0, jsx_runtime.jsx)("ol", {
+          children: matches.slice(0, 12).map((({p: p, reasons: reasons}) => (0, jsx_runtime.jsxs)("li", {
+            children: [ (0, jsx_runtime.jsx)("a", {
+              href: prefix + "/product/" + p.slug + "/",
+              children: p.name
+            }), " · Matches ", reasons.join(", ") ]
+          }, p.slug)))
+        }) : (0, jsx_runtime.jsx)("p", {
+          children: "Choose preferences to find matching pieces."
+        }) ]
+      }) ]
+    });
+  }
+  const swatches = {
+    blue: "#6684a1",
+    ivory: "#f5efdf",
+    black: "#252525",
+    olive: "#76805a",
+    sand: "#d5be9f",
+    cream: "#f3e7ce",
+    sage: "#9ba78d",
+    brown: "#82684e",
+    white: "#fff",
+    charcoal: "#4b4b49",
+    oat: "#d6c8ac",
+    navy: "#28384c",
+    tan: "#ac855e",
+    pink: "#deb2b1",
+    green: "#688363"
+  };
+  function ColorOptions({colors: colors}) {
+    return (0, jsx_runtime.jsxs)("div", {
+      className: "colour-options",
+      children: [ (0, jsx_runtime.jsx)("strong", {
+        children: "Colours"
+      }), colors.length ? colors.map((c => (0, jsx_runtime.jsxs)("span", {
+        children: [ swatches[c.toLowerCase()] && (0, jsx_runtime.jsx)("i", {
+          "aria-hidden": "true",
+          style: {
+            backgroundColor: swatches[c.toLowerCase()]
+          }
+        }), c ]
+      }, c))) : (0, jsx_runtime.jsx)("span", {
+        children: "Colour details unavailable."
+      }) ]
+    });
+  }
+  const editorial_demos_namespaceObject = JSON.parse('[{"slug":"weekend-casual","kind":"lookbook","title":"Weekend Casual","description":"Build an easy weekend outfit around cotton, a utility layer and cream sneakers.","department":"Men","occasion":"Weekend","productSlugs":["classic-tee","city-jacket","everyday-sneaker"],"published":true,"position":1,"startsOn":"","endsOn":""},{"slug":"modern-minimalist","kind":"lookbook","title":"Modern Minimalist","description":"Pair soft knitwear and straight denim with a simple shoulder bag.","department":"Women","occasion":"Everyday","productSlugs":["ribbed-knit","straight-jeans","leather-bag"],"published":true,"position":2,"startsOn":"","endsOn":""},{"slug":"winter-layers","kind":"campaign","title":"Winter Layers","description":"Explore crew knits and overshirts for layered dressing.","department":"Men","occasion":"Winter","productSlugs":["men-merino-crew-knit","men-weekend-overshirt","men-classic-zip-cardigan"],"published":true,"position":1,"startsOn":"","endsOn":""},{"slug":"play-days","kind":"campaign","title":"Play Days","description":"An edit of everyday separates for a day of play.","department":"Kids","occasion":"Everyday","productSlugs":["kids-oat-weekend-tee","kids-olive-cotton-shorts","kids-olive-field-jacket"],"published":true,"position":2,"startsOn":"","endsOn":""}]');
   const demo_products_namespaceObject = JSON.parse('[{"slug":"ribbed-knit","name":"The Everyday Knit","category":"Knitwear","gender":"WOMEN","brand":"NEW-ERA Studio","price":"2490","colors":["Ivory"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":true,"id":"demo-ribbed-knit","categorySlug":"knitwear","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/sweater.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"essential-shirt","name":"Relaxed Cotton Shirt","category":"Shirts","gender":"MEN","brand":"Form & Field","price":"1890","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":true,"id":"demo-essential-shirt","categorySlug":"shirts","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/shirt.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"satin-dress","name":"The Weekend Dress","category":"Dresses","gender":"WOMEN","brand":"Atelier Edit","price":"3290","colors":["Sage"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":true,"id":"demo-satin-dress","categorySlug":"dresses","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/dress.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"essential-hoodie","name":"Essential Cotton Hoodie","category":"Hoodies","gender":"MEN","brand":"NEW-ERA Studio","price":"2190","colors":["Sand"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":true,"id":"demo-essential-hoodie","categorySlug":"hoodies","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/hoodie.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"straight-jeans","name":"Straight-leg Denim","category":"Jeans","gender":"WOMEN","brand":"Form & Field","price":"2790","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-straight-jeans","categorySlug":"jeans","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jeans.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"classic-tee","name":"The Perfect White Tee","category":"T-Shirts","gender":"MEN","brand":"NEW-ERA Studio","price":"890","colors":["Ivory"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-classic-tee","categorySlug":"t-shirts","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/tee.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"city-jacket","name":"City Layers Jacket","category":"Jackets","gender":"MEN","brand":"Atelier Edit","price":"4490","colors":["Charcoal"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-city-jacket","categorySlug":"jackets","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jacket.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"everyday-sneaker","name":"Everyday Low-top Sneaker","category":"Footwear","gender":"MEN","brand":"Form & Field","price":"2990","colors":["Cream"],"sizes":["UK 5","UK 6","UK 7","UK 8"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-everyday-sneaker","categorySlug":"footwear","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/shoes.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"leather-bag","name":"The Day-to-day Bag","category":"Accessories","gender":"WOMEN","brand":"Atelier Edit","price":"3490","colors":["Tan"],"sizes":["One size"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-leather-bag","categorySlug":"accessories","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/bag.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"oat-weekend-knit","name":"Oat Weekend Knit","category":"Knitwear","gender":"WOMEN","brand":"Atelier Edit","price":"2650","colors":["Ivory"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-oat-weekend-knit","categorySlug":"knitwear","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/sweater.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"blue-weekday-shirt","name":"Blue Weekday Shirt","category":"Shirts","gender":"MEN","brand":"NEW-ERA Studio","price":"2190","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-blue-weekday-shirt","categorySlug":"shirts","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/shirt.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"soft-sand-dress","name":"Soft Sand Dress","category":"Dresses","gender":"WOMEN","brand":"Form & Field","price":"3690","colors":["Sage"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-soft-sand-dress","categorySlug":"dresses","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/dress.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"studio-hoodie","name":"Studio Pullover Hoodie","category":"Hoodies","gender":"MEN","brand":"Form & Field","price":"2390","colors":["Sand"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-studio-hoodie","categorySlug":"hoodies","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/hoodie.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"weekend-denim","name":"Weekend Straight Denim","category":"Jeans","gender":"WOMEN","brand":"NEW-ERA Studio","price":"2950","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-weekend-denim","categorySlug":"jeans","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jeans.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"cotton-crew-tee","name":"Cotton Crew Tee","category":"T-Shirts","gender":"MEN","brand":"Atelier Edit","price":"1190","colors":["Ivory"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-cotton-crew-tee","categorySlug":"t-shirts","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/tee.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"evening-layer-jacket","name":"Evening Layer Jacket","category":"Jackets","gender":"WOMEN","brand":"Atelier Edit","price":"4190","colors":["Charcoal"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-evening-layer-jacket","categorySlug":"jackets","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jacket.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"sand-weekend-sneaker","name":"Sand Weekend Sneaker","category":"Footwear","gender":"WOMEN","brand":"NEW-ERA Studio","price":"3190","colors":["Cream"],"sizes":["UK 5","UK 6","UK 7","UK 8"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-sand-weekend-sneaker","categorySlug":"footwear","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/shoes.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"sand-studio-bag","name":"Sand Studio Bag","category":"Accessories","gender":"WOMEN","brand":"Form & Field","price":"3290","colors":["Tan"],"sizes":["One size"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-sand-studio-bag","categorySlug":"accessories","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/bag.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"men-linen-summer-shirt","name":"Straight-leg Denim · Studio Edit","category":"Jeans","gender":"MEN","brand":"NEW-ERA Studio","price":"1490","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-men-linen-summer-shirt","categorySlug":"jeans","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jeans.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"men-soft-cotton-polo","name":"Cable Knit Sweater · Studio Edit","category":"Knitwear","gender":"MEN","brand":"NEW-ERA Studio","price":"1690","colors":["Ivory"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-men-soft-cotton-polo","categorySlug":"knitwear","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/sweater.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"men-relaxed-chino-trousers","name":"Utility Jacket · Studio Edit","category":"Jackets","gender":"MEN","brand":"NEW-ERA Studio","price":"1890","colors":["Charcoal"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-men-relaxed-chino-trousers","categorySlug":"jackets","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jacket.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"men-merino-crew-knit","name":"Cotton Pullover Hoodie · Studio Edit","category":"Hoodies","gender":"MEN","brand":"NEW-ERA Studio","price":"2090","colors":["Sand"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-men-merino-crew-knit","categorySlug":"hoodies","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/hoodie.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"men-weekend-overshirt","name":"Relaxed Cotton Shirt · Studio Edit","category":"Shirts","gender":"MEN","brand":"NEW-ERA Studio","price":"2290","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-men-weekend-overshirt","categorySlug":"shirts","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/shirt.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"men-classic-zip-cardigan","name":"Essential Cotton Tee · Studio Edit","category":"T-Shirts","gender":"MEN","brand":"NEW-ERA Studio","price":"2490","colors":["Ivory"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-men-classic-zip-cardigan","categorySlug":"t-shirts","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/tee.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"men-everyday-cotton-shorts","name":"Straight-leg Denim · Studio Edit","category":"Jeans","gender":"MEN","brand":"NEW-ERA Studio","price":"2690","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-men-everyday-cotton-shorts","categorySlug":"jeans","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jeans.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"women-linen-wide-leg-trousers","name":"Utility Jacket · Studio Edit","category":"Jackets","gender":"WOMEN","brand":"NEW-ERA Studio","price":"1490","colors":["Charcoal"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-women-linen-wide-leg-trousers","categorySlug":"jackets","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jacket.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"women-soft-cotton-blouse","name":"Cotton Pullover Hoodie · Studio Edit","category":"Hoodies","gender":"WOMEN","brand":"NEW-ERA Studio","price":"1690","colors":["Sand"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-women-soft-cotton-blouse","categorySlug":"hoodies","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/hoodie.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"women-ribbed-cotton-tee","name":"Relaxed Cotton Shirt · Studio Edit","category":"Shirts","gender":"WOMEN","brand":"NEW-ERA Studio","price":"1890","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-women-ribbed-cotton-tee","categorySlug":"shirts","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/shirt.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"women-weekend-wrap-skirt","name":"Essential Cotton Tee · Studio Edit","category":"T-Shirts","gender":"WOMEN","brand":"NEW-ERA Studio","price":"2090","colors":["Ivory"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-women-weekend-wrap-skirt","categorySlug":"t-shirts","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/tee.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"women-lightweight-cardigan","name":"Straight-leg Denim · Studio Edit","category":"Jeans","gender":"WOMEN","brand":"NEW-ERA Studio","price":"2290","colors":["Blue"],"sizes":["XS","S","M","L","XL"],"department":"ADULT","ageGroup":null,"featured":false,"id":"demo-women-lightweight-cardigan","categorySlug":"jeans","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/jeans.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-oat-weekend-tee","name":"Cotton Shirt and Shorts Set · child","category":"Boys Clothing","gender":"MEN","ageGroup":"CHILD","colors":["Olive"],"price":"690","sizes":["4–5Y","6–7Y"],"brand":"NEW-ERA Studio","department":"KIDS","featured":true,"id":"demo-kids-oat-weekend-tee","categorySlug":"boys-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/boys.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-olive-field-jacket","name":"Cotton Shirt and Shorts Set · preteen","category":"Boys Clothing","gender":"MEN","ageGroup":"PRETEEN","colors":["Olive"],"price":"1790","sizes":["9–10Y","11–12Y"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-olive-field-jacket","categorySlug":"boys-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/boys.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-sand-play-pull-on","name":"Cotton Shirt and Shorts Set · toddler","category":"Boys Clothing","gender":"MEN","ageGroup":"TODDLER","colors":["Olive"],"price":"790","sizes":["1–2Y","2–3Y"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-sand-play-pull-on","categorySlug":"boys-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/boys.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-sand-pinafore","name":"Floral Summer Dress · child","category":"Girls Clothing","gender":"WOMEN","ageGroup":"CHILD","colors":["Cream"],"price":"1290","sizes":["4–5Y","6–7Y"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-sand-pinafore","categorySlug":"girls-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/girls.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-cream-day-dress","name":"Floral Summer Dress · toddler","category":"Girls Clothing","gender":"WOMEN","ageGroup":"TODDLER","colors":["Cream"],"price":"1090","sizes":["1–2Y","2–3Y"],"brand":"NEW-ERA Studio","department":"KIDS","featured":true,"id":"demo-kids-cream-day-dress","categorySlug":"girls-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/girls.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-oat-button-layer","name":"Floral Summer Dress · preteen","category":"Girls Clothing","gender":"WOMEN","ageGroup":"PRETEEN","colors":["Cream"],"price":"1490","sizes":["9–10Y","11–12Y"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-oat-button-layer","categorySlug":"girls-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/girls.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-cream-rib-romper","name":"Ribbed Cotton Romper · baby","category":"Baby Clothing","gender":"UNISEX","ageGroup":"BABY","colors":["Ivory"],"price":"750","sizes":["0–3M","3–6M"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-cream-rib-romper","categorySlug":"baby-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/baby.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-sand-wrap-bodysuit","name":"Ribbed Cotton Romper · baby","category":"Baby Clothing","gender":"UNISEX","ageGroup":"BABY","colors":["Ivory"],"price":"590","sizes":["0–3M","3–6M","6–12M"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-sand-wrap-bodysuit","categorySlug":"baby-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/baby.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-oat-sleep-suit","name":"Ribbed Cotton Romper · baby","category":"Baby Clothing","gender":"UNISEX","ageGroup":"BABY","colors":["Ivory"],"price":"890","sizes":["3–6M","6–12M"],"brand":"NEW-ERA Studio","department":"KIDS","featured":true,"id":"demo-kids-oat-sleep-suit","categorySlug":"baby-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/baby.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-sand-play-sandal","name":"Everyday Sandals · toddler","category":"Kids Footwear","gender":"UNISEX","ageGroup":"TODDLER","colors":["Tan"],"price":"990","sizes":["UK Kids 5","UK Kids 6"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-sand-play-sandal","categorySlug":"kids-footwear","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/kids-shoes.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-cream-everyday-sandal","name":"Everyday Sandals · child","category":"Kids Footwear","gender":"UNISEX","ageGroup":"CHILD","colors":["Tan"],"price":"1190","sizes":["UK Kids 10","UK Kids 11"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-cream-everyday-sandal","categorySlug":"kids-footwear","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/kids-shoes.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-sand-rib-beanie","name":"Ribbed Beanie · child","category":"Kids Accessories","gender":"UNISEX","ageGroup":"CHILD","colors":["Oat"],"price":"490","sizes":["Child one size"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-sand-rib-beanie","categorySlug":"kids-accessories","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/kids-hat.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-oat-muslin-blanket","name":"Ribbed Beanie · baby","category":"Kids Accessories","gender":"UNISEX","ageGroup":"BABY","colors":["Oat"],"price":"640","sizes":["Baby one size"],"brand":"NEW-ERA Studio","department":"KIDS","featured":true,"id":"demo-kids-oat-muslin-blanket","categorySlug":"kids-accessories","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/kids-hat.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-olive-cotton-shorts","name":"Cotton Shirt and Shorts Set · child","category":"Boys Clothing","gender":"MEN","ageGroup":"CHILD","colors":["Olive"],"price":"790","sizes":["4–5Y","6–7Y"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-olive-cotton-shorts","categorySlug":"boys-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/boys.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true},{"slug":"kids-sand-cotton-blouse","name":"Floral Summer Dress · child","category":"Girls Clothing","gender":"WOMEN","ageGroup":"CHILD","colors":["Cream"],"price":"890","sizes":["4–5Y","6–7Y"],"brand":"NEW-ERA Studio","department":"KIDS","featured":false,"id":"demo-kids-sand-cotton-blouse","categorySlug":"girls-clothing","description":"Illustrative demo clothing. AI-generated product-only imagery; no models or people. Price, sizing and specifications are examples. Not available to purchase.","currency":"INR","originalPrice":null,"images":["./assets/girls.webp"],"retailer":"Demo retailer","availability":"AVAILABLE","isDemo":true}]');
+  const departmentOf = p => p.department === "KIDS" ? "Kids" : p.gender === "MEN" ? "Men" : p.gender === "WOMEN" ? "Women" : "Unisex";
+  function Pieces({items: items, prefix: prefix}) {
+    return items.length ? (0, jsx_runtime.jsx)("div", {
+      className: "premium-grid",
+      children: items.map((p => (0, jsx_runtime.jsxs)("a", {
+        href: prefix + "/product/" + p.slug + "/",
+        children: [ p.images[0] && (0, jsx_runtime.jsx)(Photo, {
+          src: p.images[0],
+          alt: "",
+          loading: "lazy",
+          onError: imageFallback
+        }), (0, jsx_runtime.jsx)("small", {
+          children: p.brand
+        }), (0, jsx_runtime.jsx)("h3", {
+          children: p.name
+        }), money(p.price) ]
+      }, p.slug)))
+    }) : (0, jsx_runtime.jsx)("p", {
+      children: "No matching demo pieces."
+    });
+  }
+  function Brands({products: products, prefix: prefix, params: params}) {
+    const [q, search] = (0, react.useState)(""), [dept, choose] = (0, react.useState)(""), [letter, select] = (0, 
+    react.useState)("");
+    const selected = params.get("brand");
+    const rows = products.filter((p => !dept || departmentOf(p) === dept));
+    const names = [ ...new Set(rows.map((p => p.brand))) ].sort(((a, b) => a.localeCompare(b)));
+    return (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+      children: [ (0, jsx_runtime.jsx)("h1", {
+        children: selected || "Brand directory"
+      }), (0, jsx_runtime.jsx)("p", {
+        children: "Illustrative labels represented in the published demo catalog."
+      }), (0, jsx_runtime.jsxs)("label", {
+        children: [ "Department", (0, jsx_runtime.jsx)("select", {
+          value: dept,
+          onChange: e => choose(e.target.value),
+          children: [ "", "Men", "Women", "Kids", "Unisex" ].map((d => (0, jsx_runtime.jsx)("option", {
+            value: d,
+            children: d || "All departments"
+          }, d)))
+        }) ]
+      }), selected ? (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+        children: [ (0, jsx_runtime.jsx)("a", {
+          href: prefix + "/discover/?tool=brands",
+          children: "All brands"
+        }), (0, jsx_runtime.jsxs)("p", {
+          children: [ rows.filter((p => p.brand === selected)).length, " pieces" ]
+        }), (0, jsx_runtime.jsx)(Pieces, {
+          prefix: prefix,
+          items: rows.filter((p => p.brand === selected))
+        }) ]
+      }) : (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+        children: [ (0, jsx_runtime.jsxs)("label", {
+          children: [ "Find a brand", (0, jsx_runtime.jsx)("input", {
+            value: q,
+            onChange: e => search(e.target.value)
+          }) ]
+        }), (0, jsx_runtime.jsx)("nav", {
+          "aria-label": "Brand initials",
+          children: [ "", ...new Set(names.map((b => b[0].toUpperCase()))) ].map((l => (0, 
+          jsx_runtime.jsx)("button", {
+            "aria-pressed": letter === l,
+            onClick: () => select(l),
+            children: l || "All"
+          }, l)))
+        }), (0, jsx_runtime.jsx)("ul", {
+          children: names.filter((n => n.toLowerCase().includes(q.toLowerCase()) && (!letter || n.toUpperCase().startsWith(letter)))).map((n => (0, 
+          jsx_runtime.jsxs)("li", {
+            children: [ (0, jsx_runtime.jsx)("a", {
+              href: prefix + "/discover/?tool=brands&brand=" + encodeURIComponent(n),
+              children: n
+            }), " · ", rows.filter((p => p.brand === n)).length, " pieces" ]
+          }, n)))
+        }), !names.some((n => n.toLowerCase().includes(q.toLowerCase()) && (!letter || n.toUpperCase().startsWith(letter)))) && (0, 
+        jsx_runtime.jsx)("p", {
+          children: "No matching brands."
+        }) ]
+      }) ]
+    });
+  }
+  function Discovery({apiBase: apiBase, standalone: standalone, search: search, wish: wish}) {
+    const params = new URLSearchParams(search), tool = params.get("tool") || "lookbook", prefix = standalone ? "#" : "";
+    const [catalog, setCatalog] = (0, react.useState)([]), [edits, setEdits] = (0, react.useState)([]), [status, setStatus] = (0, 
+    react.useState)("loading"), [attempt, retry] = (0, react.useState)(0);
+    (0, react.useEffect)((() => {
+      const controller = new AbortController;
+      const signal = controller.signal;
+      async function load() {
+        setStatus("loading");
+        const products = [];
+        let editorials = [];
+        if (!apiBase) {
+          products.push(...demo_products_namespaceObject);
+          editorials = editorial_demos_namespaceObject;
+        } else {
+          for (let page = 1; ;page++) {
+            const res = await fetch(apiBase + "?pageSize=48&page=" + page, {
+              signal: signal
+            });
+            if (!res.ok) throw Error();
+            const batch = await res.json();
+            products.push(...batch.products);
+            if (page >= batch.pageCount) break;
+          }
+          if (tool === "lookbook" || tool === "campaign") {
+            const res = await fetch(new URL("../editorials/", new URL(apiBase, location.href)), {
+              signal: signal
+            });
+            if (!res.ok) throw Error();
+            editorials = await res.json();
+          }
+        }
+        if (!signal.aborted) {
+          setCatalog(products.filter((p => p.isDemo)));
+          setEdits(editorials);
+          setStatus("ready");
+        }
+      }
+      load().catch((() => {
+        if (!signal.aborted) setStatus("error");
+      }));
+      return () => controller.abort();
+    }), [ apiBase, attempt, tool ]);
+    const slug = params.get("edit");
+    const visible = edits.filter((e => e.kind === tool && e.published && e.productSlugs.some((s => catalog.some((p => p.slug === s)))))).sort(((a, b) => a.position - b.position));
+    return (0, jsx_runtime.jsxs)("section", {
+      className: "premium-tools",
+      children: [ (0, jsx_runtime.jsx)("nav", {
+        "aria-label": "Discovery tools",
+        children: [ [ "lookbook", "Lookbook" ], [ "campaign", "Seasonal edits" ], [ "brands", "Brands" ], [ "profile", "Style profile" ], [ "wardrobe", "My wardrobe" ], [ "visual", "Visual search" ] ].map((([k, v]) => (0, 
+        jsx_runtime.jsx)("a", {
+          "aria-current": tool === k ? "page" : undefined,
+          href: prefix + "/discover/?tool=" + k,
+          children: v
+        }, k)))
+      }), status === "loading" ? (0, jsx_runtime.jsx)("p", {
+        role: "status",
+        children: "Loading published pieces…"
+      }) : status === "error" ? (0, jsx_runtime.jsxs)("p", {
+        role: "alert",
+        children: [ "Discovery is unavailable. ", (0, jsx_runtime.jsx)("button", {
+          onClick: () => retry(attempt + 1),
+          children: "Try again"
+        }) ]
+      }) : tool === "wardrobe" ? (0, jsx_runtime.jsx)(Wardrobe, {
+        products: catalog,
+        prefix: prefix,
+        wish: wish
+      }) : tool === "visual" ? (0, jsx_runtime.jsx)(VisualSearch, {
+        products: catalog,
+        prefix: prefix
+      }) : tool === "profile" ? (0, jsx_runtime.jsx)(Profile, {
+        products: catalog,
+        prefix: prefix
+      }) : tool === "brands" ? (0, jsx_runtime.jsx)(Brands, {
+        products: catalog,
+        prefix: prefix,
+        params: params
+      }) : (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+        children: [ (0, jsx_runtime.jsx)("h1", {
+          children: slug ? visible.find((e => e.slug === slug))?.title || "Edit unavailable" : tool === "campaign" ? "Seasonal edits" : "Lookbook"
+        }), visible.filter((e => !slug || e.slug === slug)).map((e => {
+          const pieces = e.productSlugs.flatMap((s => catalog.find((p => p.slug === s)) ?? []));
+          return (0, jsx_runtime.jsxs)("section", {
+            children: [ (0, jsx_runtime.jsxs)("small", {
+              children: [ e.department, " · ", e.occasion ]
+            }), !slug && (0, jsx_runtime.jsx)("h2", {
+              children: (0, jsx_runtime.jsx)("a", {
+                href: prefix + "/discover/?tool=" + tool + "&edit=" + e.slug,
+                children: e.title
+              })
+            }), (0, jsx_runtime.jsx)("p", {
+              children: e.description
+            }), slug ? (0, jsx_runtime.jsx)(Pieces, {
+              items: pieces,
+              prefix: prefix
+            }) : (0, jsx_runtime.jsx)("a", {
+              href: prefix + "/discover/?tool=" + tool + "&edit=" + e.slug,
+              children: (0, jsx_runtime.jsx)(Photo, {
+                src: pieces[0].images[0],
+                alt: e.title,
+                loading: "lazy",
+                onError: imageFallback
+              })
+            }) ]
+          }, e.slug);
+        })), !visible.length && (0, jsx_runtime.jsx)("p", {
+          children: "No published edits available."
+        }) ]
+      }) ]
+    });
+  }
   function standaloneCatalog(params, source = demo_products_namespaceObject) {
     source = source.filter((p => p.isDemo && [ "AVAILABLE", "OUT_OF_STOCK" ].includes(p.availability)));
     const categories = rows => [ ...new Map(rows.map((p => [ p.categorySlug, {
@@ -12746,6 +13282,245 @@
       retry: () => setAttempt((value => value + 1))
     };
   }
+  "use client";
+  function DiscoveryNav({apiBase: apiBase, standalone: standalone}) {
+    const dialog = (0, react.useRef)(null);
+    const [dept, setDept] = (0, react.useState)("");
+    const scope = dept === "Kids" ? "department=KIDS" : "gender=" + dept.toUpperCase();
+    const {data: data, status: status, retry: retry} = useCatalog(apiBase, dept ? scope + "&pageSize=48" : null);
+    const catalog = data;
+    const prefix = standalone ? "#" : "";
+    const destination = prefix + (dept === "Kids" ? "/kids/?" : "/shop/?gender=" + dept + "&");
+    (0, react.useEffect)((() => {
+      if (dept && !dialog.current?.open) dialog.current?.showModal();
+    }), [ dept ]);
+    const frequency = new Map;
+    for (const p of catalog?.products ?? []) frequency.set(p.categorySlug, (frequency.get(p.categorySlug) ?? 0) + 1);
+    const styles = (catalog?.categories ?? []).filter((c => [ "shirts", "jeans", "knitwear", "boys-clothing", "girls-clothing", "baby-clothing" ].includes(c.slug)));
+    return (0, jsx_runtime.jsxs)("div", {
+      className: "discovery-bar",
+      children: [ (0, jsx_runtime.jsxs)("nav", {
+        "aria-label": "Department guides",
+        children: [ [ "Men", "Women", "Kids" ].map((d => (0, jsx_runtime.jsxs)("button", {
+          "aria-haspopup": "dialog",
+          onClick: () => setDept(d),
+          children: [ d, "’s guide ", (0, jsx_runtime.jsx)("span", {
+            "aria-hidden": "true",
+            children: "⌄"
+          }) ]
+        }, d))), (0, jsx_runtime.jsx)("a", {
+          href: prefix + "/discover/?tool=lookbook",
+          children: "Lookbook"
+        }), (0, jsx_runtime.jsx)("a", {
+          href: prefix + "/discover/?tool=campaign",
+          children: "Seasonal edits"
+        }), (0, jsx_runtime.jsx)("a", {
+          href: prefix + "/discover/?tool=brands",
+          children: "Brands"
+        }), (0, jsx_runtime.jsx)("a", {
+          href: prefix + "/discover/?tool=profile",
+          children: "Style profile"
+        }) ]
+      }), (0, jsx_runtime.jsxs)("dialog", {
+        ref: dialog,
+        className: "guide-dialog",
+        onClose: () => setDept(""),
+        "aria-labelledby": "guide-title",
+        children: [ (0, jsx_runtime.jsxs)("div", {
+          className: "section-head",
+          children: [ (0, jsx_runtime.jsxs)("h2", {
+            id: "guide-title",
+            children: [ dept, "’s guide" ]
+          }), (0, jsx_runtime.jsx)("button", {
+            autoFocus: true,
+            onClick: () => dialog.current?.close(),
+            children: "Close"
+          }) ]
+        }), (0, jsx_runtime.jsxs)("div", {
+          className: "guide-grid",
+          children: [ (0, jsx_runtime.jsxs)("section", {
+            children: [ (0, jsx_runtime.jsx)("h3", {
+              children: "Categories"
+            }), catalog?.categories.map((c => (0, jsx_runtime.jsx)("a", {
+              href: destination + "category=" + c.slug,
+              children: c.name
+            }, c.slug))) ]
+          }), (0, jsx_runtime.jsxs)("section", {
+            children: [ (0, jsx_runtime.jsx)("h3", {
+              children: "Style edits"
+            }), styles.map((c => (0, jsx_runtime.jsx)("a", {
+              href: destination + "category=" + c.slug,
+              children: {
+                shirts: "Modern classics",
+                jeans: "Weekend denim",
+                knitwear: "Everyday layers"
+              }[c.slug] ?? c.name
+            }, c.slug))) ]
+          }), (0, jsx_runtime.jsxs)("section", {
+            children: [ (0, jsx_runtime.jsx)("h3", {
+              children: "Featured collections"
+            }), (0, jsx_runtime.jsx)("a", {
+              href: destination + "sort=newest",
+              children: "New Arrivals"
+            }), (0, jsx_runtime.jsx)("a", {
+              href: destination + "sort=featured",
+              children: "Featured pieces"
+            }), (0, jsx_runtime.jsx)("h3", {
+              children: "Most represented in this edit"
+            }), [ ...frequency ].sort(((a, b) => b[1] - a[1])).slice(0, 2).map((([slug]) => (0, 
+            jsx_runtime.jsx)("a", {
+              href: destination + "category=" + slug,
+              children: catalog?.categories.find((c => c.slug === slug))?.name
+            }, slug))) ]
+          }) ]
+        }), status === "loading" && (0, jsx_runtime.jsx)("p", {
+          role: "status",
+          children: "Loading guide…"
+        }), status === "error" && (0, jsx_runtime.jsx)("button", {
+          onClick: retry,
+          children: "Retry guide"
+        }) ]
+      }) ]
+    });
+  }
+  function Newsletter({onPrivacy: onPrivacy}) {
+    const [message, setMessage] = (0, react.useState)("");
+    return (0, jsx_runtime.jsxs)("section", {
+      className: "premium-news wrap section",
+      "aria-labelledby": "newsletter-title",
+      children: [ (0, jsx_runtime.jsxs)("div", {
+        children: [ (0, jsx_runtime.jsx)("p", {
+          className: "eyebrow",
+          children: "Newsletter · Demo preview"
+        }), (0, jsx_runtime.jsx)("h2", {
+          id: "newsletter-title",
+          children: "Discover what’s next in style"
+        }), (0, jsx_runtime.jsx)("p", {
+          children: "Curated fashion inspiration from NEW-ERA."
+        }) ]
+      }), (0, jsx_runtime.jsxs)("form", {
+        onSubmit: e => {
+          e.preventDefault();
+          setMessage("Preview complete. Your address has not been stored or subscribed.");
+          e.currentTarget.reset();
+        },
+        children: [ (0, jsx_runtime.jsxs)("label", {
+          children: [ "Email address", (0, jsx_runtime.jsx)("input", {
+            type: "email",
+            autoComplete: "email",
+            required: true,
+            maxLength: 254,
+            onChange: () => setMessage("")
+          }) ]
+        }), (0, jsx_runtime.jsxs)("label", {
+          className: "consent",
+          children: [ (0, jsx_runtime.jsx)("input", {
+            type: "checkbox",
+            required: true
+          }), "I agree to try this signup preview." ]
+        }), (0, jsx_runtime.jsxs)("p", {
+          children: [ "This preview does not send or save email. ", (0, jsx_runtime.jsx)("button", {
+            type: "button",
+            onClick: e => onPrivacy(e.currentTarget),
+            children: "Privacy policy"
+          }) ]
+        }), (0, jsx_runtime.jsx)("button", {
+          className: "button",
+          children: "Preview signup"
+        }), (0, jsx_runtime.jsx)("p", {
+          role: "status",
+          children: message
+        }) ]
+      }) ]
+    });
+  }
+  /**
+ * @license lucide-react v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+  const toKebabCase = string => string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  const mergeClasses = (...classes) => classes.filter(((className, index, array) => Boolean(className) && className.trim() !== "" && array.indexOf(className) === index)).join(" ").trim();
+  /**
+ * @license lucide-react v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+  var defaultAttributes = {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  };
+  /**
+ * @license lucide-react v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+  const Icon = (0, react.forwardRef)((({color: color = "currentColor", size: size = 24, strokeWidth: strokeWidth = 2, absoluteStrokeWidth: absoluteStrokeWidth, className: className = "", children: children, iconNode: iconNode, ...rest}, ref) => (0, 
+  react.createElement)("svg", {
+    ref: ref,
+    ...defaultAttributes,
+    width: size,
+    height: size,
+    stroke: color,
+    strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth,
+    className: mergeClasses("lucide", className),
+    ...rest
+  }, [ ...iconNode.map((([tag, attrs]) => (0, react.createElement)(tag, attrs))), ...Array.isArray(children) ? children : [ children ] ])));
+  /**
+ * @license lucide-react v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+  const createLucideIcon = (iconName, iconNode) => {
+    const Component = (0, react.forwardRef)((({className: className, ...props}, ref) => (0, 
+    react.createElement)(Icon, {
+      ref: ref,
+      iconNode: iconNode,
+      className: mergeClasses(`lucide-${toKebabCase(iconName)}`, className),
+      ...props
+    })));
+    Component.displayName = `${iconName}`;
+    return Component;
+  };
+  /**
+ * @license lucide-react v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+  const X = createLucideIcon("X", [ [ "path", {
+    d: "M18 6 6 18",
+    key: "1bl5f8"
+  } ], [ "path", {
+    d: "m6 6 12 12",
+    key: "d8bk6v"
+  } ] ]);
+  /**
+ * @license lucide-react v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+  const Search = createLucideIcon("Search", [ [ "circle", {
+    cx: "11",
+    cy: "11",
+    r: "8",
+    key: "4ej97u"
+  } ], [ "path", {
+    d: "m21 21-4.3-4.3",
+    key: "1qie3q"
+  } ] ]);
   function SearchBox({apiBase: apiBase, standalone: standalone, kids: kids, gender: gender, mobile: mobile = false, onClose: onClose}) {
     const [value, setValue] = (0, react.useState)(""), [term, setTerm] = (0, react.useState)(""), [open, setOpen] = (0, 
     react.useState)(false);
@@ -13173,13 +13948,11 @@
       }), discountPercent(p.price, p.originalPrice) > 0 && (0, jsx_runtime.jsxs)("span", {
         className: "discount-badge",
         children: [ discountPercent(p.price, p.originalPrice), "% off · demo price" ]
-      }), (0, jsx_runtime.jsxs)("div", {
+      }), (0, jsx_runtime.jsx)("div", {
         className: "product-meta",
-        children: [ (0, jsx_runtime.jsx)("span", {
+        children: (0, jsx_runtime.jsx)("span", {
           children: p.brand
-        }), (0, jsx_runtime.jsxs)("span", {
-          children: [ p.retailer, p.isDemo ? " · Not connected" : "" ]
-        }) ]
+        })
       }), (0, jsx_runtime.jsx)(Link, {
         href: `/product/${p.slug}/`,
         className: "product-name",
@@ -13210,7 +13983,7 @@
     const stored = JSON.parse(localStorage.getItem("new-era-wishlist") || "[]");
     return Array.isArray(stored) ? [ ...new Set(stored.filter((value => typeof value === "string" && isSlug(value)))) ].slice(0, 100) : [];
   }
-  function Storefront({catalog: catalog = false, kids: kids = false, productId: productId, apiBase: apiBase = "/api/catalog/", routeSearch: routeSearch}) {
+  function Storefront({discovery: discovery = false, catalog: catalog = false, kids: kids = false, productId: productId, apiBase: apiBase = "/api/catalog/", routeSearch: routeSearch}) {
     const [wish, setWish] = (0, react.useState)([]), [ready, setReady] = (0, react.useState)(false), [menu, setMenu] = (0, 
     react.useState)(false), [search, setSearch] = (0, react.useState)(false), [query, setQuery] = (0, 
     react.useState)(""), [category, setCategory] = (0, react.useState)("All"), [gender, setGender] = (0, 
@@ -13362,7 +14135,7 @@
       }
       firstUrl.current = false;
     }), [ ready, catalog, catalogQuery, gender, kids, savedOnly, page, routeSearch ]);
-    const {data: data, previousData: previousData, status: status, retry: retry} = useCatalog(apiBase, ready ? catalogQuery : null);
+    const {data: data, previousData: previousData, status: status, retry: retry} = useCatalog(apiBase, ready && !discovery ? catalogQuery : null);
     const home = !catalog && !productId ? data : null;
     const listing = catalog ? data : null;
     const options = catalog ? previousData : null;
@@ -13566,6 +14339,9 @@
             children: menu ? (0, jsx_runtime.jsx)(X, {}) : (0, jsx_runtime.jsx)(Menu, {})
           }) ]
         }) ]
+      }), (0, jsx_runtime.jsx)(DiscoveryNav, {
+        apiBase: apiBase,
+        standalone: routeSearch !== undefined
       }), search && (0, jsx_runtime.jsx)(SearchBox, {
         mobile: true,
         apiBase: apiBase,
@@ -13586,7 +14362,12 @@
             active: category,
             onSelect: chooseKidsCategory
           }) ]
-        }), selected ? (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+        }), discovery ? (0, jsx_runtime.jsx)(Discovery, {
+          apiBase: apiBase,
+          standalone: routeSearch !== undefined,
+          search: routeSearch ?? (ready ? location.search : ""),
+          wish: wish
+        }) : selected ? (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
           children: [ (0, jsx_runtime.jsxs)("nav", {
             "aria-label": "Breadcrumb",
             className: "wrap breadcrumbs",
@@ -13628,8 +14409,10 @@
                 }) ]
               }), selected.ageGroup && (0, jsx_runtime.jsx)("p", {
                 children: kidsAgeGroups[selected.ageGroup]
-              }), selected.colors.length > 0 && (0, jsx_runtime.jsxs)("p", {
-                children: [ "Colour: ", selected.colors.join(", ") ]
+              }), (0, jsx_runtime.jsx)(ColorOptions, {
+                colors: selected.colors
+              }), !selected.sizes.length && (0, jsx_runtime.jsx)("p", {
+                children: "Size details unavailable."
               }), selected.sizes.length > 0 && (0, jsx_runtime.jsxs)("fieldset", {
                 children: [ (0, jsx_runtime.jsx)("legend", {
                   children: "Explore sizes"
@@ -13696,17 +14479,23 @@
         }) : catalog ? (0, jsx_runtime.jsxs)("section", {
           className: "wrap catalog",
           id: kids ? "kids-products" : undefined,
-          children: [ (0, jsx_runtime.jsx)("p", {
-            className: "eyebrow",
-            children: "THE NEW-ERA COLLECTION"
+          children: [ (0, jsx_runtime.jsxs)("nav", {
+            className: "listing-crumb",
+            "aria-label": "Breadcrumb",
+            children: [ (0, jsx_runtime.jsx)(Link, {
+              href: "/",
+              children: "Home"
+            }), " / ", (0, jsx_runtime.jsx)("span", {
+              children: savedOnly ? "Wishlist" : query.trim() ? "Search" : "Collections"
+            }) ]
           }), query.trim() ? (0, jsx_runtime.jsxs)("h1", {
             children: [ "Search results for “", query.trim(), "”" ]
           }) : kids ? (0, jsx_runtime.jsx)("h2", {
             children: collectionLabel ?? "All Kids Fashion"
           }) : (0, jsx_runtime.jsx)("h1", {
-            children: savedOnly ? "Your favourites" : gender !== "All" ? `${gender}’s edit` : sort === "Newest" ? "New Arrivals" : query ? "Search results" : category !== "All" ? collectionLabel || "Category" : "Find your everyday extraordinary."
+            children: savedOnly ? "Your favourites" : gender !== "All" ? `${gender}’s edit` : sort === "Newest" ? "New Arrivals" : query ? "Search results" : category !== "All" ? collectionLabel || "Category" : "The collection"
           }), (0, jsx_runtime.jsx)("p", {
-            children: "Thoughtfully selected. Effortlessly worn."
+            children: savedOnly ? "Pieces you’ve saved to revisit." : kids ? "Play clothes, little layers and first wardrobes." : gender === "Men" ? "Explore everyday shirts, relaxed denim and considered layers." : gender === "Women" ? "Explore soft knitwear, easy dresses and everyday essentials." : "Browse the edit by category, colour or fit."
           }), (0, jsx_runtime.jsxs)("div", {
             className: "demo-note",
             children: [ !apiBase ? "Standalone demo preview · 45 sample products · Database not connected. " : "", "This catalog contains demo products. Prices, sizes and availability are illustrative." ]
@@ -13845,46 +14634,50 @@
           }) ]
         }) : (0, jsx_runtime.jsxs)(jsx_runtime.Fragment, {
           children: [ (0, jsx_runtime.jsxs)("section", {
-            className: "hero",
+            className: "hero atelier-hero campaign-cover",
             children: [ (0, jsx_runtime.jsx)(Photo, {
               onError: imageFallback,
               className: "hero-photo",
               src: photo("hero-woman"),
               alt: "Woman wearing a belted ivory dress in a sunlit courtyard",
               fetchPriority: "high"
-            }), (0, jsx_runtime.jsx)("div", {
-              className: "hero-shade"
             }), (0, jsx_runtime.jsxs)("div", {
               className: "hero-copy",
               children: [ (0, jsx_runtime.jsx)("p", {
                 className: "eyebrow",
-                children: "THE ART OF EVERYDAY DRESSING"
+                children: "The everyday edit"
               }), (0, jsx_runtime.jsxs)("h1", {
-                children: [ "The New ", (0, jsx_runtime.jsx)("br", {}), "Generation ", (0, jsx_runtime.jsx)("br", {}), "of Style" ]
+                children: [ "The New", (0, jsx_runtime.jsx)("br", {}), " Generation", (0, jsx_runtime.jsx)("br", {}), " ", (0, 
+                jsx_runtime.jsx)("em", {
+                  children: "of Style"
+                }) ]
               }), (0, jsx_runtime.jsx)("p", {
                 className: "hero-description",
                 children: "Modern. Versatile. Made for Everyone."
-              }), (0, jsx_runtime.jsx)("div", {
+              }), (0, jsx_runtime.jsxs)("div", {
                 className: "hero-buttons",
-                children: (0, jsx_runtime.jsxs)(Link, {
+                children: [ (0, jsx_runtime.jsxs)(Link, {
                   className: "button",
                   href: "/shop/",
                   children: [ "Explore Collection ", (0, jsx_runtime.jsx)("span", {
                     "aria-hidden": "true",
                     children: "→"
                   }) ]
-                })
-              }), (0, jsx_runtime.jsx)("div", {
-                className: "hero-foot",
-                children: "TIMELESS PIECES. ENDLESS POSSIBILITIES."
+                }), (0, jsx_runtime.jsx)(Link, {
+                  className: "cover-lookbook",
+                  href: "/discover/?tool=lookbook",
+                  children: "View lookbook"
+                }) ]
               }) ]
-            }), (0, jsx_runtime.jsx)("span", {
-              className: "hero-caption",
-              children: "THE EVERYDAY COLLECTION"
             }) ]
-          }), (0, jsx_runtime.jsx)("section", {
+          }), (0, jsx_runtime.jsxs)("section", {
             className: "wrap section department-section",
-            children: (0, jsx_runtime.jsx)("div", {
+            children: [ (0, jsx_runtime.jsx)("div", {
+              className: "section-head",
+              children: (0, jsx_runtime.jsx)("h2", {
+                children: "Shop by department"
+              })
+            }), (0, jsx_runtime.jsx)("div", {
               className: "department-grid",
               children: [ {
                 name: "Men",
@@ -13910,7 +14703,7 @@
                   children: [ (0, jsx_runtime.jsxs)("h2", {
                     children: [ item.name, "’s Collection" ]
                   }), (0, jsx_runtime.jsx)("p", {
-                    children: item.name === "Kids" ? "Fun, Comfy & Everyday Wear" : item.name === "Men" ? "Sharp, Casual & Everyday Styles" : "Elegant, Trendy & Timeless Looks"
+                    children: item.name === "Kids" ? "Room to move and play" : item.name === "Men" ? "Relaxed shirts and clean cuts" : "Soft shapes and easy layers"
                   }), (0, jsx_runtime.jsxs)("span", {
                     children: [ "Shop ", item.name, " ", (0, jsx_runtime.jsx)("span", {
                       "aria-hidden": "true",
@@ -13919,7 +14712,7 @@
                   }) ]
                 }) ]
               }, item.name)))
-            })
+            }) ]
           }), (0, jsx_runtime.jsxs)("section", {
             className: "wrap section new-arrivals",
             children: [ status === "loading" && (0, jsx_runtime.jsx)("p", {
@@ -13948,6 +14741,55 @@
                 p: p
               }, p.slug)))
             }), feedback(!home?.arrivals.length, "No new pieces yet.") ]
+          }), (0, jsx_runtime.jsxs)("section", {
+            id: "collections",
+            className: "wrap section curated-section",
+            children: [ (0, jsx_runtime.jsx)("div", {
+              className: "section-head",
+              children: (0, jsx_runtime.jsx)("h2", {
+                children: "Curated Collections"
+              })
+            }), (0, jsx_runtime.jsx)("div", {
+              className: "curated-grid",
+              children: [ {
+                title: "Modern Classics",
+                category: "shirts",
+                image: "shirt",
+                piece: "Cotton shirting"
+              }, {
+                title: "Everyday Essentials",
+                category: "t-shirts",
+                image: "tee",
+                piece: "Everyday tees"
+              }, {
+                title: "Weekend Edit",
+                category: "jeans",
+                image: "jeans",
+                piece: "Relaxed denim"
+              }, {
+                title: "Seasonal Favorites",
+                category: "knitwear",
+                image: "sweater",
+                piece: "Soft knitwear"
+              } ].map((edit => (0, jsx_runtime.jsxs)(Link, {
+                href: "/shop/?category=" + edit.category,
+                children: [ (0, jsx_runtime.jsx)(Photo, {
+                  src: photo(edit.image),
+                  alt: "",
+                  loading: "lazy",
+                  onError: imageFallback
+                }), (0, jsx_runtime.jsxs)("div", {
+                  children: [ (0, jsx_runtime.jsx)("small", {
+                    children: edit.piece
+                  }), (0, jsx_runtime.jsx)("h3", {
+                    children: edit.title
+                  }) ]
+                }), (0, jsx_runtime.jsx)("span", {
+                  "aria-hidden": "true",
+                  children: "↗"
+                }) ]
+              }, edit.category)))
+            }) ]
           }), (0, jsx_runtime.jsxs)("section", {
             className: "wrap section category-section",
             children: [ (0, jsx_runtime.jsxs)("div", {
@@ -14011,13 +14853,13 @@
             children: [ (0, jsx_runtime.jsxs)("div", {
               children: [ (0, jsx_runtime.jsx)("p", {
                 className: "eyebrow",
-                children: "LESS, BUT BETTER"
+                children: "The knitwear edit"
               }), (0, jsx_runtime.jsxs)("h2", {
-                children: [ "Your next", (0, jsx_runtime.jsx)("br", {}), (0, jsx_runtime.jsx)("em", {
-                  children: "wardrobe favourites."
+                children: [ "A study in", (0, jsx_runtime.jsx)("br", {}), (0, jsx_runtime.jsx)("em", {
+                  children: "softness."
                 }) ]
               }), (0, jsx_runtime.jsx)("p", {
-                children: "Beautiful layers. Everyday possibilities."
+                children: "Discover the texture of everyday layers."
               }), (0, jsx_runtime.jsx)(Link, {
                 href: "/shop/?category=knitwear",
                 className: "button",
@@ -14054,55 +14896,8 @@
                 p: p
               }, p.slug)))
             }), feedback(!home?.kids?.length, "No Kids pieces available yet.") ]
-          }), (0, jsx_runtime.jsxs)("section", {
-            id: "collections",
-            className: "wrap section",
-            children: [ (0, jsx_runtime.jsxs)("div", {
-              className: "section-head",
-              children: [ (0, jsx_runtime.jsx)("h2", {
-                children: "A mood for every moment"
-              }), (0, jsx_runtime.jsx)("span", {
-                className: "small",
-                children: "THE SEASONAL EDITS"
-              }) ]
-            }), (0, jsx_runtime.jsxs)("div", {
-              className: "editorial-grid",
-              children: [ (0, jsx_runtime.jsxs)(Link, {
-                href: shop("Women"),
-                children: [ (0, jsx_runtime.jsx)(Photo, {
-                  onError: imageFallback,
-                  src: photo("photo-1483985988355-763728e1935b"),
-                  alt: "Weekend fashion inspiration",
-                  loading: "lazy"
-                }), (0, jsx_runtime.jsxs)("div", {
-                  children: [ (0, jsx_runtime.jsx)("p", {
-                    className: "eyebrow",
-                    children: "THE WEEKEND EDIT"
-                  }), (0, jsx_runtime.jsxs)("h2", {
-                    children: [ "Out of office.", (0, jsx_runtime.jsx)("br", {}), "Into your element." ]
-                  }), (0, jsx_runtime.jsx)("span", {
-                    children: "Explore womenswear"
-                  }) ]
-                }) ]
-              }), (0, jsx_runtime.jsxs)(Link, {
-                href: shop("Men"),
-                children: [ (0, jsx_runtime.jsx)(Photo, {
-                  onError: imageFallback,
-                  src: photo("photo-1516257984-b1b4d707412e"),
-                  alt: "Charcoal utility jacket, product only",
-                  loading: "lazy"
-                }), (0, jsx_runtime.jsxs)("div", {
-                  children: [ (0, jsx_runtime.jsx)("p", {
-                    className: "eyebrow",
-                    children: "EVERYDAY, ELEVATED"
-                  }), (0, jsx_runtime.jsxs)("h2", {
-                    children: [ "Good style.", (0, jsx_runtime.jsx)("br", {}), "No occasion needed." ]
-                  }), (0, jsx_runtime.jsx)("span", {
-                    children: "Explore menswear"
-                  }) ]
-                }) ]
-              }) ]
-            }) ]
+          }), (0, jsx_runtime.jsx)(Newsletter, {
+            onPrivacy: b => openInfo("Privacy policy", b)
           }), (0, jsx_runtime.jsxs)("section", {
             className: "brand-strip wrap",
             children: [ (0, jsx_runtime.jsx)("p", {
@@ -14155,7 +14950,7 @@
           }), (0, jsx_runtime.jsxs)("div", {
             children: [ (0, jsx_runtime.jsx)("h3", {
               children: "About NEW-ERA"
-            }), [ "Our story", "Affiliate disclosure" ].map((t => (0, jsx_runtime.jsx)("button", {
+            }), [ "Our story", "Contact", "FAQ", "Affiliate disclosure" ].map((t => (0, jsx_runtime.jsx)("button", {
               onClick: e => openInfo(t, e.currentTarget),
               children: t
             }, t))) ]
@@ -14197,7 +14992,7 @@
         }), (0, jsx_runtime.jsx)("h2", {
           children: modal
         }), (0, jsx_runtime.jsx)("p", {
-          children: modal === "Account" ? "Accounts are planned for a later phase. Your wishlist is currently saved on this browser only." : modal === "Affiliate disclosure" ? "The current NEW-ERA catalog contains only demo products and has no affiliate links." : modal === "Privacy policy" ? "This concept stores wishlist item IDs in your browser. No email addresses are collected. Demo product imagery is bundled locally. A production privacy policy will be prepared before live accounts, analytics or email collection are enabled." : modal === "Terms of use" ? "All product imagery, pricing, sizes and availability are illustrative. The demo catalog does not accept orders." : modal === "Retailer connections" ? "Retailer feeds and affiliate links are disabled in demo-only mode." : modal === "Contact" ? "Contact details have not been configured for this preview." : "NEW-ERA is a new perspective on everyday style: a thoughtful edit of pieces that feel as good as they look. This first phase explores the visual identity and shopping experience."
+          children: modal === "Account" ? "Accounts are planned for a later phase. Your wishlist is currently saved on this browser only." : modal === "Affiliate disclosure" ? "The current NEW-ERA catalog contains only demo products and has no affiliate links." : modal === "Privacy policy" ? "This concept stores your wishlist, optional style preferences and outfit boards in your browser profile. Uploaded search images stay in the current tab. No email addresses are collected. Demo product imagery is bundled locally. A production privacy policy will be prepared before live accounts, analytics or email collection are enabled." : modal === "Terms of use" ? "All product imagery, pricing, sizes and availability are illustrative. The demo catalog does not accept orders." : modal === "Retailer connections" ? "Retailer feeds and affiliate links are disabled in demo-only mode." : modal === "FAQ" ? "Can I order a piece? This is a discovery demo. Use the heart to save favourites on this browser and explore the available sizes on each product page." : modal === "Contact" ? "Contact details have not been configured for this preview." : "NEW-ERA is a new perspective on everyday style: a thoughtful edit of pieces that feel as good as they look. This first phase explores the visual identity and shopping experience."
         }), modal === "Account" && routeSearch === undefined && (0, jsx_runtime.jsx)("a", {
           className: "button",
           href: "/admin/",
@@ -14232,6 +15027,7 @@
     const route = hash.split("?")[0];
     const product = route.match(/^\/product\/([a-z0-9-]+)\/$/);
     return (0, jsx_runtime.jsx)(Storefront, {
+      discovery: route === "/discover/",
       catalog: route === "/shop/" || route === "/kids/",
       kids: route === "/kids/",
       productId: product?.[1],
